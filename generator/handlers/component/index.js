@@ -18,7 +18,7 @@ module.exports = (node, traverseNode) => {
 
   let content = '';
 
-  if (0 < children.length <= 1)
+  if (children.length === 1)
     content = children[0].content;
   else
     content = `(${ dom(name, children) })`;
