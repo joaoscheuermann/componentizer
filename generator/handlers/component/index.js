@@ -1,6 +1,6 @@
 const { pascalCase, dom } = require('../../../utils');
 
-const getRectangleStyle = ({ absoluteBoundingBox, fills, strokes, strokeWeight }) => {
+const getRectangleStylePropeties = ({ absoluteBoundingBox, fills, strokes, strokeWeight }) => {
   const fixedNumber = number => Number(number.toFixed(2))
   const rgba = ({ r, g, b, a }) => `rgba(${fixedNumber(r)}, ${fixedNumber(g)}, ${fixedNumber(b)}, ${fixedNumber(a)})`
 
@@ -23,27 +23,30 @@ module.exports = (node, traverseNode) => {
   const name = pascalCase(node.name);
   const reverseChildrens = node.children.reverse();
 
-  // Create the styles of the element
-  let style = {};
+  let styles = [];
+  let hasStyle = false;
+  let content = '';
+
+  // Create the styles of the component
   const lastChild = reverseChildrens[reverseChildrens.length - 1] || null;
   if (lastChild && lastChild.type === 'RECTANGLE') {
     reverseChildrens.pop();
-    style = getRectangleStyle(lastChild);
-  }
+    hasStyle = true;
+    styles.push({ name, style: getRectangleStylePropeties(lastChild) })
+  };
 
   // Process the childrens
   const children = reverseChildrens.map(node => traverseNode(node));
   const dependencies = children.filter(child => child.dependency).map(({ dependency }) => dependency);
 
-  const childrenStyles = children.filter(child => child.style).map(({ name, style }) => ({ name, style }));
-  const styles = Object.keys(style).length ? [ ...childrenStyles, { name, style } ] : childrenStyles;
+  // Add the child styles to the root
+  styles.push(...children.filter(child => child.style).map(({ name, style }) => ({ name, style })));
 
-  let content = '';
-  if (children.length === 1 && !Object.keys(style).length)
+  // Process the content
+  if (children.length === 1 && !hasStyle)
     content = children[0].content;
   else
     content = `(${ dom(name, children) })`;
 
-  console.log({ name, styles, content, children, dependencies })
   return { name, styles, content, children, dependencies };
 }
