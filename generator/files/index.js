@@ -73,7 +73,7 @@ const saveComponentFiles = async ({ name, ...props }) => {
   console.log(`Generated ${ name } component files`);
 }
 
-const saveComponents = async components => {
+const fromComponents = async components => {
   if (await exists('./output'))
     await rmrf('./output');
 
@@ -84,5 +84,5 @@ const saveComponents = async components => {
 
 module.exports = {
   saveComponentFiles,
-  saveComponents,
+  fromComponents,
 }

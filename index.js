@@ -2,8 +2,7 @@ const Figma = require('figma-api');
 
 const { personalAccessToken, file, page: targetPage } = require('./config.json');
 
-const { fromPage: generateFromPage } = require('./generator');
-const { saveComponents } = require('./file');
+const { components, files } = require('./generator');
 
 // Simple
 const start = async () => {
@@ -13,9 +12,7 @@ const start = async () => {
   const pages = document.children;
   const page = pages.find(page => page.name === targetPage);
 
-  const components = generateFromPage(page);
-
-  saveComponents(components);
+  files.fromComponents(await components.fromPage(page));
 }
 
 start()
