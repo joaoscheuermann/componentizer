@@ -15,4 +15,4 @@ const start = async () => {
   files.fromComponents(await components.fromPage(page));
 }
 
-start()
+start();

@@ -2,6 +2,7 @@ const { pascalCase, dom } = require('../../../utils');
 
 module.exports = (node) => {
   const name = pascalCase(node.name);
+  const text = node.characters;
 
   const style = { 
     'font-family': node.style.fontFamily,
@@ -10,7 +11,7 @@ module.exports = (node) => {
     'line-height': Math.round(node.style.lineHeightPx) + 'px',
   };
 
-  const content = dom(name, node.characters);
+  const content = `<${name}/>`;
 
-  return { name, style, content }
+  return { name, style, text, content }
 }

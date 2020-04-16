@@ -9,8 +9,8 @@ const handlers = {
   }
 }
 
-const traverseNode = (node , depth = 0) => handlers[node.type] ? handlers[node.type](node, traverseNode) : handlers.default(node);
-const fromPage = page => page.children.map(node => traverseNode(node));
+const traverseNode = (node) => handlers[node.type] ? handlers[node.type](node, traverseNode) : handlers.default(node);
+const fromPage = page => page.children.reverse().map(node => traverseNode(node));
 
 module.exports = {
   fromPage,

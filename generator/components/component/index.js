@@ -1,12 +1,14 @@
 const { pascalCase, dom } = require('../../../utils');
+const { add: addToCache } = require('../../cache');
 
 const getRectangleStylePropeties = ({ absoluteBoundingBox, fills, strokes, strokeWeight }) => {
   const fixedNumber = number => Number(number.toFixed(2))
-  const rgba = ({ r, g, b, a }) => `rgba(${fixedNumber(r)}, ${fixedNumber(g)}, ${fixedNumber(b)}, ${fixedNumber(a)})`
+  const rgba = ({ r, g, b, a }) => `rgba(${fixedNumber(r * 255)}, ${fixedNumber(g * 255)}, ${fixedNumber(b * 255)}, ${fixedNumber(a)})`
 
   const data = {
     display: 'flex',
-    width: absoluteBoundingBox.width + 'px',
+    width: '100%',
+    'max-width': absoluteBoundingBox.width + 'px',
     height: absoluteBoundingBox.height + 'px',
   }
 
@@ -36,17 +38,34 @@ module.exports = (node, traverseNode) => {
   };
 
   // Process the childrens
-  const children = reverseChildrens.map(node => traverseNode(node));
-  const dependencies = children.filter(child => child.dependency).map(({ dependency }) => dependency);
+  const children = reverseChildrens.map((node, index, array) => {
+    const prevSibling = array[index - 1] || null;
+    const traversedNode = traverseNode(node);
+
+    if (prevSibling) {
+      const nodeBoundingBox = node.absoluteBoundingBox;
+      const prevSiblingBoundingBox = prevSibling.absoluteBoundingBox;
+
+      const margin = nodeBoundingBox.y - (prevSiblingBoundingBox.y + prevSiblingBoundingBox.height);
+
+      traversedNode.style['margin-top'] = margin + 'px';
+    }
+
+    return traversedNode;
+  });
 
   // Add the child styles to the root
-  styles.push(...children.filter(child => child.style).map(({ name, style }) => ({ name, style })));
+  styles.push(...children.filter(child => child.style).map(({ name, style, dependency = false }) => ({ name, style, dependency })));
 
   // Process the content
   if (children.length === 1 && !hasStyle)
     content = children[0].content;
   else
-    content = `(${ dom(name, children) })`;
+    content = `(${ dom(hasStyle ? name : 'div', children) })`;
 
-  return { name, styles, content, children, dependencies };
+  const data = { name, styles, content, children };
+
+  addToCache(node.id, data);
+
+  return data;
 }
